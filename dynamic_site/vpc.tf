@@ -38,7 +38,7 @@ resource "aws_subnet" "subnet_public_1a_sandbox" {
   vpc_id                  = aws_vpc.vpc_sandbox.id
   cidr_block              = "10.0.0.0/24"
   availability_zone       = "ap-northeast-1a"
-  map_public_ip_on_launch = true
+  map_public_ip_on_launch = false
 
   tags = {
     Name = "tag-sandbox"
@@ -48,7 +48,7 @@ resource "aws_subnet" "subnet_public_1c_sandbox" {
   vpc_id                  = aws_vpc.vpc_sandbox.id
   cidr_block              = "10.0.1.0/24"
   availability_zone       = "ap-northeast-1c"
-  map_public_ip_on_launch = true
+  map_public_ip_on_launch = false
 
   tags = {
     Name = "tag-sandbox"

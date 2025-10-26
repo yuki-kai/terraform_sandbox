@@ -12,14 +12,14 @@ resource "aws_ecs_task_definition" "ecs_task_definition_sandbox" {
   cpu                      = 256
   memory                   = 512
 
-  // ECRからnginxのイメージを取得
+  // ECRからnextjsのイメージを取得
   container_definitions = jsonencode([
     {
-      name  = "terraform-sandbox"
-      image = "144560605492.dkr.ecr.ap-northeast-1.amazonaws.com/nginx:latest",
+      name = "terraform-sandbox"
+      image = "144560605492.dkr.ecr.ap-northeast-1.amazonaws.com/nextjs:latest",
       portMappings = [
         {
-          containerPort = 80
+          containerPort = 3000
           "protocol"    = "tcp",
         }
       ],
@@ -40,18 +40,15 @@ resource "aws_ecs_service" "ecs_service_sandbox" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets          = [aws_subnet.subnet_public_1a_sandbox.id, aws_subnet.subnet_public_1c_sandbox.id]
-    security_groups  = [aws_security_group.security_group_sandbox.id]
-    assign_public_ip = true
+    subnets = [aws_subnet.subnet_public_1a_sandbox.id, aws_subnet.subnet_public_1c_sandbox.id]
+    security_groups  = [aws_security_group.ecs_sg.id]
+    assign_public_ip = true # TODO: falseにしたいがECRをpullできなくなる
   }
-  // TODO: ECSをALB経由でのみアクセス可能にする
-  // ECSのセキュリティグループは3000のみを許可する
-  // ALBのセキュリティグループは80, 443のみを許可する
 
   load_balancer {
     target_group_arn = aws_lb_target_group.lb_target_group_sandbox.arn
     container_name   = "terraform-sandbox" // aws_ecs_task_definitionのcontainer_definitionsのnameと同じであること
-    container_port   = 80
+    container_port   = 3000
   }
 
   depends_on = [
