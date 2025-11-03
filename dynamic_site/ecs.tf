@@ -15,7 +15,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition_sandbox" {
   // ECRからnextjsのイメージを取得
   container_definitions = jsonencode([
     {
-      name = "terraform-sandbox"
+      name  = "terraform-sandbox"
       image = "144560605492.dkr.ecr.ap-northeast-1.amazonaws.com/nextjs:latest",
       portMappings = [
         {
@@ -40,9 +40,10 @@ resource "aws_ecs_service" "ecs_service_sandbox" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets = [aws_subnet.subnet_public_1a_sandbox.id, aws_subnet.subnet_public_1c_sandbox.id]
-    security_groups  = [aws_security_group.ecs_sg.id]
-    assign_public_ip = true # TODO: falseにしたいがECRをpullできなくなる
+    subnets         = [aws_subnet.subnet_public_1a_sandbox.id, aws_subnet.subnet_public_1c_sandbox.id]
+    security_groups = [aws_security_group.ecs_sg.id]
+    # VPCエンドポイント経由でECRをpullする
+    assign_public_ip = false
   }
 
   load_balancer {
@@ -54,4 +55,45 @@ resource "aws_ecs_service" "ecs_service_sandbox" {
   depends_on = [
     aws_iam_role_policy_attachment.ecs_task_execution_role_policy,
   ]
+}
+
+# VPCエンドポイント経由でECRをpullする
+resource "aws_vpc_endpoint" "ecr_api" {
+  vpc_id              = aws_vpc.vpc_sandbox.id
+  service_name        = "com.amazonaws.ap-northeast-1.ecr.api"
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = true
+  subnet_ids = [
+    aws_subnet.subnet_public_1a_sandbox.id,
+    aws_subnet.subnet_public_1c_sandbox.id,
+  ]
+  security_group_ids = [aws_security_group.security_group_sandbox.id]
+  tags = {
+    Name = "ecr-api-endpoint"
+  }
+}
+
+# dockerコマンドを実行するためのエンドポイント
+resource "aws_vpc_endpoint" "ecr_dkr" {
+  vpc_id              = aws_vpc.vpc_sandbox.id
+  service_name        = "com.amazonaws.ap-northeast-1.ecr.dkr"
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = true
+  subnet_ids = [
+    aws_subnet.subnet_public_1a_sandbox.id,
+    aws_subnet.subnet_public_1c_sandbox.id,
+  ]
+  security_group_ids = [aws_security_group.security_group_sandbox.id]
+  tags = {
+    Name = "ecr-dkr-endpoint"
+  }
+}
+
+# コンテナイメージをpullするためのエンドポイント
+resource "aws_vpc_endpoint" "s3" {
+  vpc_id            = aws_vpc.vpc_sandbox.id
+  service_name      = "com.amazonaws.ap-northeast-1.s3"
+  vpc_endpoint_type = "Gateway"
+  route_table_ids   = [aws_route_table.route_table_sandbox.id]  # プライベートサブネットのルートテーブル
+  tags = { Name = "s3-gateway-endpoint" }
 }
