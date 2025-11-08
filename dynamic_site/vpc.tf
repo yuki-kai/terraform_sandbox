@@ -64,3 +64,44 @@ resource "aws_route_table_association" "route_table_association_c_sandbox" {
   subnet_id      = aws_subnet.subnet_public_1c_sandbox.id
   route_table_id = aws_route_table.route_table_sandbox.id
 }
+
+# VPCエンドポイント経由でECRをpullする
+resource "aws_vpc_endpoint" "ecr_api" {
+  vpc_id              = aws_vpc.vpc_sandbox.id
+  service_name        = "com.amazonaws.ap-northeast-1.ecr.api"
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = true
+  subnet_ids = [
+    aws_subnet.subnet_public_1a_sandbox.id,
+    aws_subnet.subnet_public_1c_sandbox.id,
+  ]
+  security_group_ids = [aws_security_group.security_group_sandbox.id]
+  tags = {
+    Name = "ecr-api-endpoint"
+  }
+}
+
+# dockerコマンドを実行するためのエンドポイント
+resource "aws_vpc_endpoint" "ecr_dkr" {
+  vpc_id              = aws_vpc.vpc_sandbox.id
+  service_name        = "com.amazonaws.ap-northeast-1.ecr.dkr"
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = true
+  subnet_ids = [
+    aws_subnet.subnet_public_1a_sandbox.id,
+    aws_subnet.subnet_public_1c_sandbox.id,
+  ]
+  security_group_ids = [aws_security_group.security_group_sandbox.id]
+  tags = {
+    Name = "ecr-dkr-endpoint"
+  }
+}
+
+# コンテナイメージをpullするためのエンドポイント
+resource "aws_vpc_endpoint" "s3" {
+  vpc_id            = aws_vpc.vpc_sandbox.id
+  service_name      = "com.amazonaws.ap-northeast-1.s3"
+  vpc_endpoint_type = "Gateway"
+  route_table_ids   = [aws_route_table.route_table_sandbox.id] # プライベートサブネットのルートテーブル
+  tags              = { Name = "s3-gateway-endpoint" }
+}
