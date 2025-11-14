@@ -6,6 +6,11 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.157",
+    "@types/node": "^24.10.1",
     "esbuild": "^0.27.0"
+  },
+  "dependencies": {
+    "@aws-sdk/client-scheduler": "^3.931.0",
+    "typescript": "^5.9.3"
   }
 }
