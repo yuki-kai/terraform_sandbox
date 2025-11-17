@@ -1,7 +1,7 @@
 {
   "scripts": {
-    "prebuild": "rm -rf dist",
-    "build": "esbuild index.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=dist/index.js",
+    "prebuild": "rm -rf dist",    
+    "build": "esbuild src/**/*.ts --minify --sourcemap --platform=node --target=es2020 --outdir=dist --format=cjs",
     "postbuild": "cd dist && zip -r index.zip index.js*"
   },
   "devDependencies": {

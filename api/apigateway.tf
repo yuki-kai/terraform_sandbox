@@ -24,14 +24,14 @@ resource "aws_api_gateway_integration" "sandbox" {
   # API GatewayのメソッドリクエストのHTTPメソッドに関係なく統合リクエストにはPOST
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
-  uri                     = aws_lambda_function.sandbox_lambda_function.invoke_arn
+  uri                     = aws_lambda_function.request_schedule.invoke_arn
 }
 
 # API GatewayがLambdaを呼び出すための許可
 resource "aws_lambda_permission" "api_gateway" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.sandbox_lambda_function.function_name
+  function_name = aws_lambda_function.request_schedule.function_name
   principal     = "apigateway.amazonaws.com"
 
   source_arn = "${aws_api_gateway_rest_api.api.execution_arn}/*"

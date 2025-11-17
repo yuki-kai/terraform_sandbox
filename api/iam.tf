@@ -111,7 +111,7 @@ resource "aws_iam_role_policy" "scheduler_invoke_policy" {
       {
         Effect   = "Allow",
         Action   = ["lambda:InvokeFunction"],
-        Resource = aws_lambda_function.sandbox_lambda_function_2.arn
+        Resource = aws_lambda_function.request_ses.arn
       }
     ]
   })

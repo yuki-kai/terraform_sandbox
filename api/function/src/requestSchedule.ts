@@ -65,12 +65,3 @@ export const handler = async (event: APIGatewayEvent): Promise<APIGatewayProxyRe
     };
   }
 };
-
-
-export const second_handler = () => {
-  console.log("second_handler");
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ message: 'second' }),
-  };
-};
