@@ -116,3 +116,28 @@ resource "aws_iam_role_policy" "scheduler_invoke_policy" {
     ]
   })
 }
+
+resource "aws_iam_role" "ses_access_lambda_role" {
+  name               = "ses-request-lambda-role"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
+}
+
+resource "aws_iam_policy" "ses_access_policy" {
+  name   = "ses-access-policy"
+  policy = data.aws_iam_policy_document.lambda_ses_access_role.json
+}
+
+data "aws_iam_policy_document" "lambda_ses_access_role" {
+  statement {
+    actions = [
+      "ses:SendEmail",
+      "ses:SendRawEmail",
+    ]
+    resources = ["arn:aws:ses:ap-northeast-1:${data.aws_caller_identity.current.account_id}:identity/*"]
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "ses_access_attachment" {
+  role       = aws_iam_role.ses_access_lambda_role.name
+  policy_arn = aws_iam_policy.ses_access_policy.arn
+}

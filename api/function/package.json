@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "prebuild": "rm -rf dist",    
+    "prebuild": "rm -rf dist",
     "build": "esbuild src/**/*.ts --minify --sourcemap --platform=node --target=es2020 --outdir=dist --format=cjs",
     "postbuild": "cd dist && zip -r index.zip index.js*"
   },
@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-scheduler": "^3.931.0",
+    "@aws-sdk/client-ses": "^3.932.0",
     "typescript": "^5.9.3"
   }
 }

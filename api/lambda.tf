@@ -24,7 +24,7 @@ data "archive_file" "sandbox" {
 resource "aws_lambda_function" "request_ses" {
   function_name    = "requestSes"
   filename         = data.archive_file.sandbox.output_path
-  role             = aws_iam_role.lambda_role.arn
+  role             = aws_iam_role.ses_access_lambda_role.arn
   source_code_hash = data.archive_file.sandbox.output_base64sha256
   runtime          = "nodejs22.x"
   handler          = "requestSes.handler"
