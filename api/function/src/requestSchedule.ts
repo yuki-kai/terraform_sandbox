@@ -5,8 +5,8 @@ import { SchedulerClient, CreateScheduleCommand, FlexibleTimeWindowMode } from '
 const schedulerClient = new SchedulerClient({ region: 'ap-northeast-1' });
 
 /**
- * リクエストボディの scheduledTime に指定した日時に一度だけ Lambda を実行するスケジュールを作成します。
- * body 例: { "id": "abc", "scheduledTime": "2025-11-11T15:30:00Z", "payload": { ... } }
+ * リクエストボディの scheduledAt に指定した日時に一度だけ Lambda を実行するスケジュールを作成します。
+ * body 例: { "id": "abc", "scheduledAt": "2025-11-11T15:30:00Z", "payload": { ... } }
  */
 export const handler = async (event: APIGatewayEvent): Promise<APIGatewayProxyResult> => {
   try {
@@ -14,9 +14,9 @@ export const handler = async (event: APIGatewayEvent): Promise<APIGatewayProxyRe
 
     // 実行時刻（ISO 形式）: 指定がなければデフォルトで5分後
     let when: Date;
-    if (body.scheduledTime) {
-      when = new Date(body.scheduledTime);
-      if (isNaN(when.getTime())) throw new Error('scheduledTime が不正です');
+    if (body.scheduledAt) {
+      when = new Date(body.scheduledAt);
+      if (isNaN(when.getTime())) throw new Error('scheduledAt が不正です');
     } else {
       when = new Date();
       when.setMinutes(when.getMinutes() + 5);
