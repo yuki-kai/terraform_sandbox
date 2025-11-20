@@ -20,11 +20,36 @@ resource "aws_s3_bucket_public_access_block" "main" {
   restrict_public_buckets = true
 }
 
+locals {
+  build_files = fileset("website/build", "**/*")
+}
+
 resource "aws_s3_object" "index_html" {
-  bucket       = aws_s3_bucket.s3_bucket_sandbox.bucket
-  key          = "index.html"
-  source       = "${path.module}/index.html" # パス
-  content_type = "text/html"
+  bucket = aws_s3_bucket.s3_bucket_sandbox.bucket
+
+  # filesetで取得したファイルパスのセットに対してループ
+  for_each = local.build_files
+  # S3オブジェクトのキー（パス）。S3上ではbuild/が不要なため、replaceで取り除く。
+  key = replace(each.key, "build/", "")
+  # ローカルファイルへの絶対パス
+  source = "website/build/${each.key}"
+  # ファイル内容の変更を検出してS3オブジェクトを更新するために必要
+  etag = filemd5("website/build/${each.key}")
+  # ファイルタイプ（Content-Type）を自動設定（例: text/html, application/javascriptなど）
+  content_type = lookup(
+    {
+      "html" = "text/html",
+      "css"  = "text/css",
+      "js"   = "application/javascript",
+      "json" = "application/json",
+      "png"  = "image/png",
+      "svg"  = "image/svg+xml",
+      # 他の必要なMIMEタイプを追加
+    },
+    # ファイルの拡張子を取得
+    regex(".*\\.([a-z]+)$", each.key)[0],
+    "application/octet-stream" # 拡張子がない場合のデフォルト
+  )
 
   depends_on = [aws_s3_bucket_policy.my_bucket_policy]
 }
